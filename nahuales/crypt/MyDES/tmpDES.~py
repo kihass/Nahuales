@@ -1,0 +1,8 @@
+﻿import crypt
+import py
+def main():
+	crypt.crypt()
+    pass
+
+if __name__ == '__main__':
+    main()

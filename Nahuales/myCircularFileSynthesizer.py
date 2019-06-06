@@ -7,7 +7,7 @@ __copyright__ = "(c) Carlos Enrique Quijano Tapia 2018"
 __credits__ = ""
 
 __licence__ = "GPLv3"
-__version__ = "$Version: 0 Revision: 0 Since: 15/02/2018"
+__version__ = "$Version: 0 Revision: 1 Since: 14/02/2019"
 __maintainer__ = "Carlos Enrique Quijano Tapia"
 __email__ = "kike.qt@gmail.com"
 __status__ = "Developing"
@@ -19,6 +19,7 @@ from os import path
 import pyaes
 
 from myBytesTools import bytes2int
+from myBytesTools import int2bytes
 
 
 class Circular_File_Synthesizer(object):
@@ -32,11 +33,13 @@ class Circular_File_Synthesizer(object):
 	__data = b''
 	__fileLists = []
 	__flaCycleCrypt = False
+	__flaXOR = False
 	__lenData = None
 	__pos = 0
+	__prevData = 0
 	__seed = defaultHash()
 
-	def __init__(self, argFilesList):
+	def __init__(self, argFilesList: list):
 		"""Build the object and receive the list of circular files"""
 		self.data = argFilesList[:]
 
@@ -46,6 +49,22 @@ class Circular_File_Synthesizer(object):
 			if self.__cntJmps > self.__lenData:
 				self.__cntJmps = 0
 				self.crypt()
+
+	def __XORize(self, argBytes: bytes) -> bytes:
+		"""Execute the XOR operation between argBytes and __prevData if
+		__flaXOR is active, otherwise return the original value
+		"""
+		if self.__flaXOR:
+			newBytes = []
+
+			for cByte in argBytes:
+				self.__prevData ^= cByte
+				newBytes.append(self.__prevData)
+			
+			return bytes(newBytes)
+		
+		else:
+			return argBytes
 
 	def crypt(self) -> None:
 		"""Encrypt data"""
@@ -57,19 +76,12 @@ class Circular_File_Synthesizer(object):
 		tmpData = self.__data.decode('latin1')
 		self.__data = aes.encrypt(tmpData)
 
-	def cycleCrypt(self, argStatus = True) -> None:
-		"""Enable encrypt by cycle"""
-		self.__flaCycleCrypt = argStatus
-
-		if argStatus:
-			self.__cntJmps = 0
-
 	@property
 	def data(self) -> bytes:
 		"""Data
 
-		Returns the contents of all files used in a circular form from the initial
-		position
+		Returns the contents of all files used in a circular form from the
+		initial position
 		"""
 		return self.__data
 
@@ -80,7 +92,7 @@ class Circular_File_Synthesizer(object):
 			self.__fileLists = argFilesList[:]
 			self.__pos = 0
 
-			# Tamaños de archivos
+			# Sizes of files
 			for fn in argFilesList:
 				with open(fn, mode='rb') as file:
 					self.__data += file.read(path.getsize(fn))
@@ -148,7 +160,8 @@ class Circular_File_Synthesizer(object):
 			myBytesReturn += self.__data[0: self.__pos]
 
 		self.__cntJmps += argSize
-		return myBytesReturn
+
+		return self.__XORize(myBytesReturn)
 
 	@property
 	def readInt(self) -> int:
@@ -161,6 +174,13 @@ class Circular_File_Synthesizer(object):
 		self.__seed.update(self.readInBytes(4))
 		return bytes2int(self.__seed.digest()) % 2 ** 32
 
+	def renewCryptByCycle(self, argStatus = True) -> None:
+		"""Enable encrypt by cycle"""
+		self.__flaCycleCrypt = argStatus
+
+		if argStatus:
+			self.__cntJmps = 0
+
 	@property
 	def seed(self):
 		return self.__seed.digest()
@@ -170,6 +190,20 @@ class Circular_File_Synthesizer(object):
 		"""Fix or update the seed with the bytes it receives"""
 		self.__seed.update(argBytesSeed)
 
+	def turnXORize(self) -> None:
+		"""Inverts the value of the variable __flaXOR, that is, it turns it on
+		if it is turned off and vice versa
+		"""
+		self.__flaXOR = not self.__flaXOR
+
+	def turnOnXORize(self) -> None:
+		"""Turn ON the mode XOR"""
+		self.__flaXOR = True
+
+	def turnOffXORize(self) -> None:
+		"""Turn OFF the mode XOR"""
+		self.__flaXOR = False
+		
 
 if __name__ == '__main__':
 	"""Example of use"""
@@ -183,17 +217,35 @@ if __name__ == '__main__':
 	cfs.seed = key.digest()
 	cfs.seed = cfs.data
 
-	print('cfs.files:', cfs.files)
-	print('cfs.readInBytes(10):', cfs.readInBytes(10))
+	print('cfs.files: {}'.format(cfs.files))
+	print('cfs.readInBytes(10): {}'.format(cfs.readInBytes(10)))
 	cfs.jumpPos(-10)
 	print('cfs.jumpPos(-10)')
-	print('cfs.readInBytes(10):', cfs.readInBytes(10))
-	print('cfs.readInBytes(-10):', cfs.readInBytes(-10))
-	print('cfs.readInt:', cfs.readInt)
-	print('cfs.readIntHash', cfs.readIntHash)
-	print('cfs.data[:50]:', cfs.data[:50])
-	print('cfs.data[:50]:', cfs.data[:50].hex())
+	print('cfs.readInBytes(10): {}'.format(cfs.readInBytes(10)))
+	print('cfs.readInBytes(-10): {}\n'.format(cfs.readInBytes(-10)))
+	cfs.jumpPos(-10)
+
+	print('cfs.turnXORize(): ON')
+	cfs.turnXORize()
+	print('cfs.readInBytes(10): {}'.format(cfs.readInBytes(10)))
+	cfs.jumpPos(-10)
+	print('cfs.turnXORize(): OFF')
+	cfs.turnXORize()
+	print('cfs.readInBytes(10): {}\n'.format(cfs.readInBytes(10)))
+	cfs.jumpPos(-10)
+
+	print('cfs.readInt: {}'.format(cfs.readInt))
+	cfs.jumpPos(-4)
+	print('cfs.readIntHash {}\n'.format(cfs.readIntHash))
+	cfs.jumpPos(-4)
+
+	print('Raw')
+	print('cfs.data[:50]: {}'.format(cfs.data[:50]))
+	print('cfs.data[:50].hex(): {}\n'.format(cfs.data[:50].hex()))
+
 	cfs.crypt()
 	print('cfs.crypt()')
-	print('cfs.data[:50]:', cfs.data[:50])
-	print('cfs.data[:50]:', cfs.data[:50].hex())
+	cfs.jumpPos(-50)
+	print('cfs.data[:50]: {}'.format(cfs.data[:50]))
+	cfs.jumpPos(-50)
+	print('cfs.data[:50].hex(): {}\n'.format(cfs.data[:50].hex()))

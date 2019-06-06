@@ -13,11 +13,9 @@ __email__ = "kike.qt@gmail.com"
 __status__ = "Developing"
 
 # $Source$
+# External libraries
 from os import chdir
 from sys import platform
-
-myByteOrder = "big"
-myByteOrderStruct = ">f"
 
 
 def configurePath4EspecialCase():
@@ -36,13 +34,17 @@ def configurePath4EspecialCase():
 		)
 
 
+def counter() -> int:
+	number = 0
+
+	while True:
+		number += 1
+		yield number
+
+
 def isAndroid():
 	"""Detects if the operating system is Android"""
 	return (False, True)[platform.find('linux-armv') >= 0]
-
-
-def defaultHash():
-	pass
 
 
 configurePath4EspecialCase()

@@ -1,0 +1,11 @@
+[pathsync settings]
+pssversion=1
+path1=D:\Proyectos\Doctorado\src\NAHUALES\Nahuales
+path2=D:\Proyectos\Doctorado\src\Upload\git\Nahuales
+ignflags=12
+defbeh=0
+logpath=
+include=!.git*;*
+throttlespd=1024
+throttle=0
+syncfolders=1
