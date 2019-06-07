@@ -1,0 +1,98 @@
+activate py3
+
+Abrir Jupyter sin navegador
+jupyter notebook --no-browser
+
+
+
+Instalar paquetes desde Jupyter
+import sys
+
+!conda install --yes --prefix {sys.prefix} numpy
+
+!{sys.executable} -m pip install numpy
+
+
+
+Ejecutar codigo desde otro archivo
+De python
+%run dia.py
+
+otro notebook
+%run gaussian.pynb
+
+
+
+Cargar codigo desde otr archivo
+%load dia.py
+%load http://dominio/dia.py
+Al ejecutarlo se comentará y agregara el coóigo
+
+
+
+Variables
+%who
+%who str
+%who int
+%who function
+
+
+
+Tiempo de ejecución
+De celda
+%%time
+
+%timeit function()
+
+
+
+%%latex
+$2^2$
+
+
+
+Comandos del sistema
+!dir
+
+
+%%!
+dir
+cls
+
+
+
+Escribe en un archivo el contenido de una celda
+%%writefile salida.py
+
+import os
+os.listdir()
+
+
+
+Leer y mostrar el contenido de un archivo
+%pycat dia.py
+
+
+
+Link to other notebooks
+# In Markdown cell:
+[Link text here](‘/path/notebook.ipynb’)
+
+
+
+Present your Notebook as slides
+!jupyter nbconvert this_notebook.ipynb --to slides --post serve
+
+
+
+Converting notebooks
+Since notebooks are JSON, it is simple to convert them to other formats. Jupyter comes with a utility called nbconvert for converting to HTML, Markdown, slideshows, etc.
+For example, to convert a notebook to an HTML file, in your terminal use
+
+jupyter nbconvert --to html notebook.ipynb
+
+Converting to HTML is useful for sharing your notebooks with others who aren’t using notebooks. Markdown is great for including a notebook in blogs and other text editors that accept Markdown formatting.
+
+
+
+%lsmagic

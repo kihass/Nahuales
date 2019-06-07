@@ -102,3 +102,18 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+*.bin
+#*.txt
+nahuales/legacy*
+*.ini
+*.obj
+*.c
+*.h
+*.hatch
+*.cmd
+*Debug*
+*.report
+*.txt
+*.pss
